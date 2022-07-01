@@ -1,0 +1,20 @@
+{
+  "type": "module",
+  "name": "replay-log",
+  "version": "1.0.0",
+  "main": "a.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryuken73/replay-log.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ryuken73/replay-log/issues"
+  },
+  "homepage": "https://github.com/ryuken73/replay-log#readme",
+  "description": ""
+}

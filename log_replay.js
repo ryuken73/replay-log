@@ -1,8 +1,12 @@
+import readline from 'readline';
+import fs from 'fs';
+import { IN_FILE, OUT_FILE }  from './config_setup.js';
+//const LOG_DIR = process.env.LOG_DIR || './';
+//const SRC_FILE = process.env.SRC_FILE_NAME || 'access.log';
+//const DST_FILE = process.env.DST_FILE_NAME || 'access_clone.log';
 
-const readline = require('readline');
-const fs = require('fs');
-const IN_FILE = 'd:/temp/access.log-2021070815';
-const OUT_FILE = 'd:/temp/access_clone.log';
+//const IN_FILE = path.join(LOG_DIR, SRC_FILE);
+//const OUT_FILE = path.join(LOG_DIR, DST_FILE);
 
 const rStream = fs.createReadStream(IN_FILE);
 const wStream = fs.createWriteStream(OUT_FILE);
