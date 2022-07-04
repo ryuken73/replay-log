@@ -35,12 +35,13 @@ class Collector {
 		return Object.keys(this.statusCodes).reduce((acc, statusCode) => {
 			return {
 				...acc,
-				[statusCode]: this.statusCodes[statusCode].length
+				[statusCode]: this.statusCodes[statusCode].length || 0
 			}
 		}, {})
 		
 	};
 	get updated() { return this._updated };
+	set updated(updateTime) { this._updated = updateTime };
 	set startTime(time) { this._startTime = time };
 	get startTime() { return this._startTime };
 };

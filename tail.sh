@@ -8,3 +8,4 @@ then
 fi
 
 node ./tail.js
+# node --prof ./tail.js

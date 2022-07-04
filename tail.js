@@ -8,18 +8,19 @@ import {
 import { OUT_FILE as accessLog }  from './config_setup.js';
 import { createCollector, convertObj, MAPPING_FIELDS, classifyStatusCode, splitLine } from './readlineUtil.js';
 
-let offset = 0;
-const loop = async () => {
+// let offset = 0;
+const loop = async (collector, offset, callback=()=>{}) => {
 	try {
-		const collector = createCollector();
 		const fd = await openReadOnly(accessLog);
 		const lastSize = await getStat(fd, 'size');
+		collector.updated = Date.now();
 		if(lastSize === offset){
 			console.log(`same size: ${lastSize}`);
 			closeFD(fd)
-			return;
+			collector.startTime = `[${new Date(collector.updated)}]`;
+			callback(collector);
+			return lastSize;
 		}
-
 		console.log(`read file [ offset: ${offset}, size: ${lastSize - offset}, read to ${lastSize}]...`);
 		const rStream = getReadStream(fd, offset, lastSize);
 		const lines = await splitLine(rStream);
@@ -31,19 +32,25 @@ const loop = async () => {
 			const matchedCode = collector.getMatchedCode(httpCode);
 			collector.increaseCount(matchedCode);
 		})
-		console.log('collected: ',collector.startTime, collector.counts, collector.updated);
-		offset = lastSize;
+		callback(collector);
+		return lastSize;
 	} catch (err) {
 		console.log(err.message)
 	}
 }
 
+const postMessage = collector => {
+	console.log('collected: ',collector.startTime, collector.counts, collector.updated);
+}
+
 const main = async () => {
+	const collector = createCollector();
 	const fd = await openReadOnly(accessLog);
-	offset = await getStat(fd, 'size');
+	let offset = await getStat(fd, 'size');
 	await closeFD(fd);
 	setInterval(async () => {
-		await loop();
+		offset = await loop(collector, offset, postMessage);
+		collector.reset();
 	},5000);
 }
 main()
