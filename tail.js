@@ -5,11 +5,19 @@ import {
 	getStat
 } from './fsUtil.js';
 
-import { OUT_FILE as accessLog }  from './config_setup.js';
-import { createCollector, convertObj, MAPPING_FIELDS, classifyStatusCode, splitLine } from './readlineUtil.js';
+import { 
+	OUT_FILE as accessLog, 
+	SLEEP_TIME 
+}  from './config_setup.js';
 
-// let offset = 0;
-const loop = async (collector, offset, callback=()=>{}) => {
+import { 
+	createCollector, 
+	convertObj, 
+	MAPPING_FIELDS, 
+	splitLine 
+} from './readlineUtil.js';
+
+const loop = async (collector, offset, postMessage=()=>{}) => {
 	try {
 		const fd = await openReadOnly(accessLog);
 		const lastSize = await getStat(fd, 'size');
@@ -17,9 +25,14 @@ const loop = async (collector, offset, callback=()=>{}) => {
 		if(lastSize === offset){
 			console.log(`same size: ${lastSize}`);
 			closeFD(fd)
-			collector.startTime = `[${new Date(collector.updated)}]`;
-			callback(collector);
+			collector.startTime = `[${new Date(collector.updated - SLEEP_TIME )}]`;
+			postMessage(collector);
 			return lastSize;
+		}
+		if(lastSize < offset){
+			// file truncated of new access log created.
+			// read from first bytes.
+			offset = 0;
 		}
 		console.log(`read file [ offset: ${offset}, size: ${lastSize - offset}, read to ${lastSize}]...`);
 		const rStream = getReadStream(fd, offset, lastSize);
@@ -32,7 +45,7 @@ const loop = async (collector, offset, callback=()=>{}) => {
 			const matchedCode = collector.getMatchedCode(httpCode);
 			collector.increaseCount(matchedCode);
 		})
-		callback(collector);
+		postMessage(collector);
 		return lastSize;
 	} catch (err) {
 		console.log(err.message)
@@ -51,6 +64,6 @@ const main = async () => {
 	setInterval(async () => {
 		offset = await loop(collector, offset, postMessage);
 		collector.reset();
-	},5000);
+	},SLEEP_TIME);
 }
 main()
