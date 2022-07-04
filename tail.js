@@ -7,13 +7,13 @@ import {
 
 import { 
 	OUT_FILE as accessLog, 
-	SLEEP_TIME 
+	SLEEP_TIME,
+	MAPPING_FIELDS, 
 }  from './config_setup.js';
 
 import { 
 	createCollector, 
 	convertObj, 
-	MAPPING_FIELDS, 
 	splitLine 
 } from './readlineUtil.js';
 

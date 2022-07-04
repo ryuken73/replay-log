@@ -46,22 +46,6 @@ class Collector {
 	get startTime() { return this._startTime };
 };
 
-export const MAPPING_FIELDS = [
-    'ip',
-    'url1',
-    'time',
-    'elapsed',
-    'method',
-    'url2',
-    'httpVersion',
-    'httpCode',
-    'bytes1',
-    'bytes2',
-    'unknown1',
-    'unknown2',
-    'referrer',
-]
-
 const lineToArray = (rawLine, sep=' ') => {
     return rawLine.split(sep)
 }
