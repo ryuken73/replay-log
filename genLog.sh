@@ -3,5 +3,4 @@ then
     . ./setup_env.sh
 fi
 
-node ./tail.js
-# node --prof ./tail.js
+node ./log_replay.js --input-type=module
