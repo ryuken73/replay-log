@@ -17,7 +17,6 @@ class Requests {
 	classify = statusCode => {
 		Object.keys(this.results).find(key => 
 	}
-	i
 }
 
 const MAPPING_FIELDS = [
