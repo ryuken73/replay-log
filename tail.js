@@ -13,12 +13,13 @@ const callback = () => {
 
 }
 const loop = async () => {
-	let fd = await openReadOnly(accessLog);
 	try {
 		const results = createRequests();
+		const fd = await openReadOnly(accessLog);
 		const lastSize = await getStat(fd, 'size');
 		if(lastSize === offset){
 			console.log(`same size: ${lastSize}`);
+			closeFD(fd)
 			return;
 		}
 
@@ -28,8 +29,6 @@ const loop = async () => {
 		offset = lastSize;
 	} catch (err) {
 		console.log(err.message)
-	} finally {
-		closeFD(fd);
 	}
 }
 
