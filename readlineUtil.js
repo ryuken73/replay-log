@@ -61,12 +61,27 @@ const arrayToObject = (array, keys) => {
     }, {})
 }
 
-const makeRecord = (line, keys) => {
-    const lineSplitted = lineToArray(line);
-    return arrayToObject(lineSplitted, keys)
+const makeRecord = (keys) => {
+	return line => {
+		const lineSplitted = lineToArray(line);
+		return arrayToObject(lineSplitted, keys)
+	}
+}
+
+const makeRecordFast = (keys, positions) => {
+	return line => {
+		const lineSplitted = lineToArray(line);
+		return keys.reduce((acct, key, index) => {
+			return {
+				...acct,
+				[key]: lineSplitted[positions[index]]
+			}
+		}, {})
+	}
 }
 
 export const convertObj = makeRecord;
+export const convertObjFast = makeRecordFast;
 
 const checkValueChanged = (key) => {
     let lastValue = '';

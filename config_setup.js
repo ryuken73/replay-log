@@ -24,6 +24,20 @@ export const MAPPING_FIELDS = process.env.ACCESS_LOG_FIELDS ?
         'unknown1',
         'unknown2',
         'referrer',
-       ]
+    ];
+
+export const ENABLE_FAST_COLLECT = process.env.ENABLE_FAST_COLLECT === 'true' ? true : false;
+export const FAST_FIELDS = process.env.ACCESS_LOG_FAST_FIELDS ?
+       process.env.ACCESS_LOG_FAST_FIELDS.split(' ') :
+       [
+        'time', 
+        'httpCode'
+       ];
+export const FAST_FIELD_POSITIONS = process.env.ACCESS_LOG_FAST_FIELD_POSITIONS ?
+       process.env.ACCESS_LOG_FAST_FIELD_POSITIONS.split(' ') :
+       [
+        2,
+        7
+       ];
 
 

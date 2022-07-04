@@ -16,5 +16,8 @@
     "url": "https://github.com/ryuken73/replay-log/issues"
   },
   "homepage": "https://github.com/ryuken73/replay-log#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "debug": "^4.3.4"
+  }
 }

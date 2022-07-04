@@ -9,16 +9,33 @@ import {
 	OUT_FILE as accessLog, 
 	SLEEP_TIME,
 	MAPPING_FIELDS, 
+	ENABLE_FAST_COLLECT,
+	FAST_FIELDS,
+	FAST_FIELD_POSITIONS
 }  from './config_setup.js';
 
 import { 
 	createCollector, 
 	convertObj, 
+	convertObjFast, 
 	splitLine 
 } from './readlineUtil.js';
 
+const makeObj = ENABLE_FAST_COLLECT ? 
+				convertObjFast(FAST_FIELDS, FAST_FIELD_POSITIONS) : 
+				convertObj(MAPPING_FIELDS);
+
+import debug from 'debug';
+const logger = {
+	info: debug('info'),
+	error: debug('error'),
+	debug: debug('debug'),
+}
+
+logger.info(`ENABLE_FAST_COLLECT = ${ENABLE_FAST_COLLECT}`);
 const loop = async (collector, offset, postMessage=()=>{}) => {
 	try {
+		logger.debug('start loop');
 		const fd = await openReadOnly(accessLog);
 		const lastSize = await getStat(fd, 'size');
 		collector.updated = Date.now();
@@ -37,7 +54,8 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 		console.log(`read file [ offset: ${offset}, size: ${lastSize - offset}, read to ${lastSize}]...`);
 		const rStream = getReadStream(fd, offset, lastSize);
 		const lines = await splitLine(rStream);
-		const records = lines.map(line => convertObj(line, MAPPING_FIELDS));
+		const records = lines.map(line => makeObj(line))
+		logger.debug('get records');
 		records.forEach((record, index) => {
 			if(record.httpCode === undefined) return;
 			if(index === 0 ) collector.startTime = record.time;
@@ -45,6 +63,7 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 			const matchedCode = collector.getMatchedCode(httpCode);
 			collector.increaseCount(matchedCode);
 		})
+		logger.debug('end loop');
 		postMessage(collector);
 		return lastSize;
 	} catch (err) {
