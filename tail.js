@@ -25,7 +25,7 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 		if(lastSize === offset){
 			console.log(`same size: ${lastSize}`);
 			closeFD(fd)
-			collector.startTime = `[${new Date(collector.updated - SLEEP_TIME )}]`;
+			collector.startTime = `[${(new Date(collector.updated - SLEEP_TIME)).toISOString()}]`;
 			postMessage(collector);
 			return lastSize;
 		}
@@ -62,7 +62,8 @@ const main = async () => {
 	let offset = await getStat(fd, 'size');
 	await closeFD(fd);
 	setInterval(async () => {
-		offset = await loop(collector, offset, postMessage);
+		const newOffset = await loop(collector, offset, postMessage);
+		offset = newOffset;
 		collector.reset();
 	},SLEEP_TIME);
 }
