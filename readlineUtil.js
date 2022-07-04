@@ -1,23 +1,18 @@
 import readline from 'readline';
 
-const initialResults = {
-	'200': [],
-	'400': [],
-	'500': [],
-	'other': []
-}
-
-class Requests {
+class Collector {
 	constructor(){
-		this.results = {
+		this.statusCodes = {
 			'200': [],
 			'400': [],
 			'500': [],
 			'other': []
 		}
+		this._updated = Date.now();
+		this._startTime = null;
 	}
 	reset = () =>{
-		this.results = {
+		this.statusCodes = {
 			'200': [],
 			'400': [],
 			'500': [],
@@ -27,27 +22,30 @@ class Requests {
 	getMatchedCode = statusCode => {
 		try {
 			const firstCode = statusCode.toString()[0];
-			const resultCodes = Object.keys(this.results);
+			const resultCodes = Object.keys(this.statusCodes);
 			return resultCodes.find(resultCode => resultCode.startsWith(firstCode)) || 'other';
 		} catch(err) {
 			throw new Error(err);
 		}
 	}
 	increaseCount = code => {
-		this.results[code].push(code);
+		this.statusCodes[code].push(code);
 	}
 	get counts() { 
-		return Object.keys(this.results).reduce((acc, statusCode) => {
+		return Object.keys(this.statusCodes).reduce((acc, statusCode) => {
 			return {
 				...acc,
-				[statusCode]: this.results[statusCode].length
+				[statusCode]: this.statusCodes[statusCode].length
 			}
 		}, {})
 		
-	}
+	};
+	get updated() { return this._updated };
+	set startTime(time) { this._startTime = time };
+	get startTime() { return this._startTime };
 };
 
-const MAPPING_FIELDS = [
+export const MAPPING_FIELDS = [
     'ip',
     'url1',
     'time',
@@ -83,6 +81,8 @@ const makeRecord = (line, keys) => {
     return arrayToObject(lineSplitted, keys)
 }
 
+export const convertObj = makeRecord;
+
 const checkValueChanged = (key) => {
     let lastValue = '';
     let lastRecord = {};
@@ -98,6 +98,25 @@ const checkValueChanged = (key) => {
 
 const checkTimeChanged = checkValueChanged('time');
 const isLocalRequest = line => line.startsWith('127.0.0.1')
+
+export const splitLine = (rStream) => {
+	let results = [];
+	return new Promise((resolve, reject) => {
+		const rl = readline.createInterface(rStream);
+		rl.on('line', line => {
+			try {
+				if(isLocalRequest(line)) return;
+				results = [...results, line];
+			} catch (err){
+				console.error(err)
+			}
+		})
+		rStream.on('close', () => {
+			console.log('rStream closed: ', results.length)
+			resolve(results);
+		})
+	});
+}
 
 export const classifyStatusCode = (rStream, results) => {
 	const rl = readline.createInterface(rStream);
@@ -150,6 +169,6 @@ export const getCountByStatus = rStream => {
 	});
 }
 
-export const createRequests = () => {
-	return new Requests();
+export const createCollector = () => {
+	return new Collector();
 }

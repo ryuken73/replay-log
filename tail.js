@@ -6,15 +6,12 @@ import {
 } from './fsUtil.js';
 
 import { OUT_FILE as accessLog }  from './config_setup.js';
-import { classifyStatusCode, createRequests } from './readlineUtil.js';
+import { createCollector, convertObj, MAPPING_FIELDS, classifyStatusCode, splitLine } from './readlineUtil.js';
 
 let offset = 0;
-const callback = () => {
-
-}
 const loop = async () => {
 	try {
-		const results = createRequests();
+		const collector = createCollector();
 		const fd = await openReadOnly(accessLog);
 		const lastSize = await getStat(fd, 'size');
 		if(lastSize === offset){
@@ -23,9 +20,18 @@ const loop = async () => {
 			return;
 		}
 
-		console.log(`read file [size = ${lastSize - offset}]...`);
+		console.log(`read file [ offset: ${offset}, size: ${lastSize - offset}, read to ${lastSize}]...`);
 		const rStream = getReadStream(fd, offset, lastSize);
-		classifyStatusCode(rStream, results);
+		const lines = await splitLine(rStream);
+		const records = lines.map(line => convertObj(line, MAPPING_FIELDS));
+		records.forEach((record, index) => {
+			if(record.httpCode === undefined) return;
+			if(index === 0 ) collector.startTime = record.time;
+			const httpCode = record.httpCode.toString();
+			const matchedCode = collector.getMatchedCode(httpCode);
+			collector.increaseCount(matchedCode);
+		})
+		console.log('collected: ',collector.startTime, collector.counts, collector.updated);
 		offset = lastSize;
 	} catch (err) {
 		console.log(err.message)
