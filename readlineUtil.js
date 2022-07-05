@@ -106,7 +106,8 @@ export const splitLine = (rStream) => {
 		rl.on('line', line => {
 			try {
 				if(isLocalRequest(line)) return;
-				results = [...results, line];
+				// results = [...results, line];
+				results.push(line);
 			} catch (err){
 				console.error(err)
 			}

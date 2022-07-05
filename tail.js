@@ -30,6 +30,7 @@ const logger = {
 	info: debug('info'),
 	error: debug('error'),
 	debug: debug('debug'),
+	trace: debug('trace')
 }
 
 logger.info(`ENABLE_FAST_COLLECT = ${ENABLE_FAST_COLLECT}`);
@@ -56,7 +57,7 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 		const lines = await splitLine(rStream);
 		const records = lines.map(line => makeObj(line))
 		records.forEach((record, index) => {
-			logger.debug('line = %j', record);
+			logger.trace('line = %j', record);
 			if(record.httpCode === undefined) return;
 			if(index === 0 ) collector.startTime = record.time;
 			const httpCode = record.httpCode.toString();
