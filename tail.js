@@ -12,7 +12,7 @@ import {
 	ENABLE_FAST_COLLECT,
 	FAST_FIELDS,
 	FAST_FIELD_POSITIONS
-}  from './config_setup.js';
+}  from './setup_env.js';
 
 import { 
 	createCollector, 

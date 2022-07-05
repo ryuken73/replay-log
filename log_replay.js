@@ -1,6 +1,6 @@
 import readline from 'readline';
 import fs from 'fs';
-import { IN_FILE, OUT_FILE }  from './config_setup.js';
+import { IN_FILE, OUT_FILE }  from './setup_env.js';
 //const LOG_DIR = process.env.LOG_DIR || './';
 //const SRC_FILE = process.env.SRC_FILE_NAME || 'access.log';
 //const DST_FILE = process.env.DST_FILE_NAME || 'access_clone.log';
