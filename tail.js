@@ -55,8 +55,8 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 		const rStream = getReadStream(fd, offset, lastSize);
 		const lines = await splitLine(rStream);
 		const records = lines.map(line => makeObj(line))
-		logger.debug('get records');
 		records.forEach((record, index) => {
+			logger.debug('line = %j', record);
 			if(record.httpCode === undefined) return;
 			if(index === 0 ) collector.startTime = record.time;
 			const httpCode = record.httpCode.toString();
