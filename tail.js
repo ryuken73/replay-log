@@ -60,8 +60,9 @@ const loop = async (collector, offset, postMessage=()=>{}) => {
 			logger.trace('line = %j', record);
 			if(record.httpCode === undefined) return;
 			if(index === 0 ) collector.startTime = record.time;
-			const httpCode = record.httpCode.toString();
-			const matchedCode = collector.getMatchedCode(httpCode);
+			// const httpCode = record.httpCode.toString();
+			// const matchedCode = collector.getMatchedCode(httpCode);
+			const matchedCode = collector.getMatchedCode(record);
 			collector.increaseCount(matchedCode);
 		})
 		logger.debug('end loop');

@@ -1,5 +1,53 @@
 import readline from 'readline';
 
+const defaultGroupBy = record => {
+	const STATUS_CODES = ['200', '300', '400', '500', 'other'];
+	const httpCode = record.httpCode;
+	try {
+		const firstCode = httpCode.toString()[0];
+		return STATUS_CODES.find(code => code.startsWith(firstCode)) || 'other';
+	} catch(err) {
+		throw new Error(err);
+	}
+}
+
+class GeneralCollector {
+	constructor(groupBy=defaultGroupBy) {
+		this.grouped = {};
+		this._updated = Date.now();
+		this._startTime = null;
+		if(typeof(groupBy) === 'function'){
+			this.classifyFunc = groupBy;
+		} else {
+			this.classifyFunc = (record) => record[groupBy] || 'other';
+		}
+	}
+	reset = () => {
+		this.grouped = {};
+	}
+	getGroup = (record) => {
+		return this.classifyFunc(record);
+	}
+	getMatchedCode = this.getGroup
+	increaseCount = key => {
+		this.grouped[key] === undefined ?
+		this.grouped[key] = [key] :
+		this.grouped[key].push(key);
+	}
+	get counts() { 
+		return Object.keys(this.grouped).reduce((acc, key) => {
+			return {
+				...acc,
+				[key]: this.grouped[key].length || 0
+			}
+		}, {})
+	};
+	get updated() { return this._updated };
+	set updated(updateTime) { this._updated = updateTime };
+	set startTime(time) { this._startTime = time };
+	get startTime() { return this._startTime };
+}
+
 class Collector {
 	constructor(){
 		this.statusCodes = {
@@ -171,5 +219,7 @@ export const getCountByStatus = rStream => {
 }
 
 export const createCollector = () => {
-	return new Collector();
+	// return new Collector();
+	return new GeneralCollector();
 }
+
