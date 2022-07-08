@@ -18,7 +18,8 @@ import {
 	createCollector, 
 	convertObj, 
 	convertObjFast, 
-	splitLine 
+	splitLine, 
+	classifyStatusCode
 } from './readlineUtil.js';
 
 const makeObj = ENABLE_FAST_COLLECT ? 
@@ -26,6 +27,7 @@ const makeObj = ENABLE_FAST_COLLECT ?
 				convertObj(MAPPING_FIELDS);
 
 import debug from 'debug';
+
 const logger = {
 	info: debug('info'),
 	error: debug('error'),
@@ -34,37 +36,52 @@ const logger = {
 }
 
 logger.info(`ENABLE_FAST_COLLECT = ${ENABLE_FAST_COLLECT}`);
+
+const tailLine = async (fname, fromBytes) => {
+	try {
+		logger.debug('start tail!');
+		const fd = await openReadOnly(fname);
+		const lastSize = await getStat(fd, 'size');
+		if(fromBytes === lastSize){
+			console.log(`same size: ${lastSize}`);
+			closeFD(fd);
+			return [lastSize, []];
+		}
+		if(fromBytes > lastSize){
+			// file truncated of new access log created.
+			// read from first bytes.
+			fromBytes = 0;
+		}
+		console.log(`read file [ fromBytes: ${fromBytes}, size: ${lastSize - fromBytes}, read to ${lastSize}]...`);
+		const rStream = getReadStream(fd, fromBytes, lastSize);
+		const lines = await splitLine(rStream);
+		return [lastSize, lines];
+	} catch(err) {
+		console.log(err.message);
+	}
+}
+const classifyRecords = (records, collector) => {
+	records.forEach((record, index) => {
+		logger.trace('line = %j', record);
+		if(record.httpCode === undefined) return;
+		if(index === 0 ) collector.startTime = record.time;
+		const matchedCode = collector.getMatchedCode(record);
+		collector.increaseCount(matchedCode);
+	})
+}
+
 const loop = async (collector, offset, postMessage=()=>{}) => {
 	try {
 		logger.debug('start loop');
-		const fd = await openReadOnly(accessLog);
-		const lastSize = await getStat(fd, 'size');
 		collector.updated = Date.now();
-		if(lastSize === offset){
-			console.log(`same size: ${lastSize}`);
-			closeFD(fd)
+		const [lastSize, lines] = await tailLine(accessLog, offset);
+		if(lines.length === 0){
 			collector.startTime = `[${(new Date(collector.updated - SLEEP_TIME)).toISOString()}]`;
 			postMessage(collector);
 			return lastSize;
 		}
-		if(lastSize < offset){
-			// file truncated of new access log created.
-			// read from first bytes.
-			offset = 0;
-		}
-		console.log(`read file [ offset: ${offset}, size: ${lastSize - offset}, read to ${lastSize}]...`);
-		const rStream = getReadStream(fd, offset, lastSize);
-		const lines = await splitLine(rStream);
 		const records = lines.map(line => makeObj(line))
-		records.forEach((record, index) => {
-			logger.trace('line = %j', record);
-			if(record.httpCode === undefined) return;
-			if(index === 0 ) collector.startTime = record.time;
-			// const httpCode = record.httpCode.toString();
-			// const matchedCode = collector.getMatchedCode(httpCode);
-			const matchedCode = collector.getMatchedCode(record);
-			collector.increaseCount(matchedCode);
-		})
+		classifyRecords(records, collector);
 		logger.debug('end loop');
 		postMessage(collector);
 		return lastSize;
