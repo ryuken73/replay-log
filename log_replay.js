@@ -1,22 +1,25 @@
+import debug from 'debug';
 import readline from 'readline';
 import fs from 'fs';
 import { IN_FILE, OUT_FILE }  from './setup_env.js';
-//const LOG_DIR = process.env.LOG_DIR || './';
-//const SRC_FILE = process.env.SRC_FILE_NAME || 'access.log';
-//const DST_FILE = process.env.DST_FILE_NAME || 'access_clone.log';
-
-//const IN_FILE = path.join(LOG_DIR, SRC_FILE);
-//const OUT_FILE = path.join(LOG_DIR, DST_FILE);
 
 const rStream = fs.createReadStream(IN_FILE);
 const wStream = fs.createWriteStream(OUT_FILE);
 const rl = readline.createInterface(rStream);
 
-const COLUMN_NUM_TIME = 3;
+const TIME_FIELD_NUM = 3;
+
+const logger = {
+	info: debug('info'),
+	error: debug('error'),
+	debug: debug('debug'),
+	trace: debug('trace')
+}
 
 const getFieldBy = (line, position, sep=' ') => {
     return line.split(sep)[position-1]
 }
+
 const createValueChecker = (initial) => {
     let lastValue = initial;
     return newValue => {
@@ -31,7 +34,7 @@ const checkValueChanged = createValueChecker(0);
 
 let buffer;
 rl.on('line', line => {
-    const eventTime = getFieldBy(line, COLUMN_NUM_TIME);
+    const eventTime = getFieldBy(line, TIME_FIELD_NUM);
     const [timeChanged, isBackward] = checkValueChanged(eventTime);
     buffer += `${line}\n`;
     if(timeChanged && !isBackward){

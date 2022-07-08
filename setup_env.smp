@@ -1,0 +1,8 @@
+export LOG_DIR=/d/temp
+export SRC_FILE_NAME=access.log-2021070815
+export DST_FILE_NAME=clone_access.log
+export SLEEP_TIME=5000
+
+export ENABLE_FAST_COLLECT=true
+export ACCESS_LOG_FAST_FIELDS="time httpCode"
+export ACCESS_LOG_FAST_FIELD_POSITIONS="2 7"
