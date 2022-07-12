@@ -4,6 +4,7 @@ BEGIN{
 }
 {
 	# change timestamp and print aggregated
+	if($1 == "127.0.0.1") next;
 	if(time != $3 && time < $3)
 	{
 		time = $3;
