@@ -16,7 +16,7 @@ BEGIN{
 	currTime = systime();
 	if(currTime - lastTime > aggr_interval){
 		printf "%-30s %-5d %-5d %-5d %-5d %-5d\n",accTime, r200, r300, r400, r500, rOther;
-		result = "{\"timestamp\":" currTime ",\"200\":" r200 ",\"300\":" r300",\"400\":" r400",\"500\":" r500",\"other\":" rOther"}"
+		result = "{\"sendTime\":" currTime ",\"accTime\":" accTime ",\"200\":" r200 ",\"300\":" r300",\"400\":" r400",\"500\":" r500",\"other\":" rOther"}"
 		system("curl -s -m 0.7 --retry 0 -d '" result "' -H 'Content-Type:application/json' -X POST " server_addr);
 		# reset timer
 		lastTime = currTime;
