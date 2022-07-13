@@ -1,6 +1,7 @@
 export LOG_DIR=/d/temp
 export ACCESS_LOG=clone_access.log
 
+export NODE_NAME=edge#1
 export COL_TIME=3
 export COL_IP=1
 export COL_STATUS=8

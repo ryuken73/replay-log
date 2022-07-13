@@ -1,4 +1,5 @@
 BEGIN{
+	node_name = ENVIRON["NODE_NAME"] ? ENVIRON["NODE_NAME"] : "edge";
 	col_time = ENVIRON["COL_TIME"] ? ENVIRON["COL_TIME"] : 3;
 	col_ip = ENVIRON["COL_IP"] ? ENVIRON["COL_IP"] : 1;
 	col_status = ENVIRON["COL_STATUS"] ? ENVIRON["COL_STATUS"] : 8;
@@ -16,7 +17,17 @@ BEGIN{
 	currTime = systime();
 	if(currTime - lastTime > aggr_interval){
 		printf "%-30s %-5d %-5d %-5d %-5d %-5d\n",accTime, r200, r300, r400, r500, rOther;
-		result = "{\"sendTime\":" currTime ",\"accTime\":" accTime ",\"200\":" r200 ",\"300\":" r300",\"400\":" r400",\"500\":" r500",\"other\":" rOther"}"
+		result = "{ \
+			\"node\":\"" node_name "\", \
+			\"interval\":" aggr_interval ", \
+			\"updated\":" currTime ", \
+			\"accTime\":\"" accTime "\", \
+			\"200\":" r200 ", \
+			\"300\":" r300", \
+			\"400\":" r400", \
+			\"500\":" r500", \
+			\"other\":" rOther" \
+		}"
 		system("curl -s -m 0.7 --retry 0 -d '" result "' -H 'Content-Type:application/json' -X POST " server_addr);
 		# reset timer
 		lastTime = currTime;
