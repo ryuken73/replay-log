@@ -18,7 +18,7 @@ BEGIN{
 			# time changed. print aggreated and set time as newTime.
 			printf "%-30s %-5d %-5d %-5d %-5d %-5d\n",time, r200, r300, r400, r500, rOther;
 			result = "{\"timestamp\":" systime() ",\"200\":" r200 ",\"300\":" r300",\"400\":" r400",\"500\":" r500",\"other\":" rOther"}"
-			system("curl -s -m 0.7 --retry 0 -d '" result "' -H 'Content-Type:application/json' -X POST " server_addr);
+			system("/usr/bin/curl -s -m 0.7 --retry 0 -d '" result "' -H 'Content-Type:application/json' -X POST " server_addr);
 		}
 		# reset time
 		time = newTime;
